@@ -7157,6 +7157,7 @@ dependencies = [
  "totp-rs",
  "tray-icon",
  "ttf-parser",
+ "unicode-segmentation",
  "url",
  "uuid",
  "virtual_display",

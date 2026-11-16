@@ -2184,6 +2184,10 @@ jobs:
             export CARGO_INCREMENTAL=0
             export DEB_ARCH=${{ matrix.job.deb_arch }}
             python3 ./build.py --flutter --skip-cargo
+            if [[ "${{ matrix.job.arch }}" == "x86_64" ]]; then
+              python3 /workspace/res/test_cli_exit_codes.py \
+                /workspace/flutter/build/linux/x64/release/bundle/rustdesk || exit 1
+            fi
             if [[ "${{ matrix.job.arch }}" == "x86_64" && "${{ inputs.upload-artifact }}" == "false" ]]; then
               pushd /workspace/flutter
               flutter test --no-pub --timeout 60s || exit 1

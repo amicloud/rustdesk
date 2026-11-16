@@ -8,6 +8,8 @@ use base::config::keys;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 use base::platform::register_breakdown_handler;
 use hbb_common::{config, log};
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+mod password_stdin;
 #[cfg(windows)]
 use tauri_winrt_notification::{Duration, Sound, Toast};
 
@@ -47,6 +49,9 @@ pub fn core_main() -> Option<CoreMainAction> {
         return None;
     }
     crate::load_custom_client();
+    if password_stdin::is_requested() {
+        return password_stdin::run();
+    }
     #[cfg(windows)]
     if !crate::platform::windows::bootstrap() {
         // return None to terminate the process

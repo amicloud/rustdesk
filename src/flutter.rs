@@ -39,7 +39,7 @@ pub(crate) const APP_TYPE_CM: &str = "main";
 
 #[cfg(target_os = "macos")]
 const CORE_MAIN_EXIT_SUCCESS: i32 = 0;
-#[cfg(target_os = "macos")]
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 const CORE_MAIN_EXIT_FAILURE: i32 = 1;
 
 // Do not remove the following constants.
@@ -109,6 +109,7 @@ fn load_plugin_in_app_path(dll_name: &str) -> Result<Library, LibError> {
 /// Return true if the app should continue running with UI(possibly Flutter), false if the app should exit.
 /// On macOS, command-only paths exit here because the Swift caller ignores
 /// the return value; update failures must therefore use a non-zero exit status.
+/// Command failures exit here on Linux too; false means success to its runner.
 #[cfg(not(windows))]
 #[no_mangle]
 pub extern "C" fn rustdesk_core_main() -> bool {
@@ -128,7 +129,6 @@ pub extern "C" fn rustdesk_core_main() -> bool {
         Some(crate::core_main::CoreMainAction::ExitFailure(err)) => {
             eprintln!("Command failed: {err}");
             log::error!("Command failed: {err}");
-            #[cfg(target_os = "macos")]
             std::process::exit(CORE_MAIN_EXIT_FAILURE);
         }
         None => {
@@ -157,7 +157,9 @@ pub extern "C" fn rustdesk_core_main_args(args_len: *mut c_int) -> *mut *mut c_c
                 return rust_args_to_c_args(args, args_len);
             }
             Some(crate::core_main::CoreMainAction::ExitFailure(err)) => {
+                eprintln!("Command failed: {err}");
                 log::error!("Command failed: {err}");
+                std::process::exit(CORE_MAIN_EXIT_FAILURE);
             }
             None => {}
         }
